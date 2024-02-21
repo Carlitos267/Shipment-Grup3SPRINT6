@@ -1,10 +1,11 @@
 package cat.institutmarianao.shipments.controllers;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import cat.institutmarianao.shipments.model.Delivery;
 import cat.institutmarianao.shipments.model.Shipment;
 import cat.institutmarianao.shipments.model.Shipment.Status;
 import cat.institutmarianao.shipments.model.User;
+import cat.institutmarianao.shipments.model.forms.ShipmentsFilter;
 import cat.institutmarianao.shipments.services.ShipmentService;
 import cat.institutmarianao.shipments.services.UserService;
 
@@ -42,43 +44,50 @@ public class ShipmentController {
 	}
 
 	@GetMapping("/new")
-	public ModelAndView newShipment(@ModelAttribute("user") User user) {
-
-		// TODO - New shipment
-
-		return null;
+	public ModelAndView newShipment() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName();
+		ModelAndView modelAndView = new ModelAndView("shipment");
+		Shipment shipment = new Shipment();
+		shipment.setReceptionist(username);
+		modelAndView.getModelMap().addAttribute("shipment", shipment);
+		return modelAndView;
 	}
 
 	@PostMapping("/new")
-	public String submitNewShipment(@Validated Shipment shipment, BindingResult result, ModelMap modelMap) {
-
-		// TODO - Submit new shipment
-
-		return null;
+	public String submitNewShipment(@Validated Shipment shipment, BindingResult result) {
+		shipmentService.add(shipment);
+		return "redirect:/shipments/list/PENDING";
 	}
 
 	@GetMapping("/list/{shipment-status}")
-	public ModelAndView allShipmentsList(@ModelAttribute("user") User user,
-			@PathVariable("shipment-status") Status shipmentStatus) {
+	public ModelAndView allShipmentsList(@PathVariable("shipment-status") Status shipmentStatus) {
+		ModelAndView shipmentsView = new ModelAndView("shipments");
 
-		// TODO - Retrieve all shipments by status
+		ShipmentsFilter shipmentFilter = new ShipmentsFilter();
+		shipmentFilter.setStatus(shipmentStatus);
+		shipmentsView.getModelMap().addAttribute("shipmentStatus", shipmentStatus);
+		shipmentsView.getModelMap().addAttribute("shipments", shipmentService.filterShipments(shipmentFilter));
+		shipmentsView.getModelMap().addAttribute("assignment", new Assignment());
+		shipmentsView.getModelMap().addAttribute("delivery", new Delivery());
+		shipmentsView.getModelMap().addAttribute("couriers", userService.getAllCourier());
 
-		return null;
+		return shipmentsView;
+
 	}
 
 	@PostMapping("/assign")
-	public String assignShipment(@Validated Assignment assignment) {
+	public String assignShipment(@Validated Assignment assignment, BindingResult result) {
+		assignment.setDate(new Date());
+		shipmentService.tracking(assignment);
+		return "redirect:/shipments/list/IN_PROCESS";
 
-		// TODO - Save shipment assignment
-
-		return null;
 	}
 
 	@PostMapping("/deliver")
-	public String deliverShipment(@Validated Delivery delivery) {
-
-		// TODO - Save shipment delivery
-
-		return null;
+	public String deliverShipment(@Validated Delivery delivery, BindingResult result) {
+		delivery.setDate(new Date());
+		shipmentService.tracking(delivery);
+		return "redirect:/shipments/list";
 	}
 }

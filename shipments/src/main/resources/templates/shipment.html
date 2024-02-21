@@ -28,9 +28,115 @@
 
 		<section class="card my-1"
 			th:replace="~{fragments/template :: heading}">Heading</section>
+			
+	<form action="#" th:action="@{#ctx.springRequestContext.requestUri}" method="post" th:object="${shipment}" class="form-horizontal"> 
+		<div class="container px-4">
+			<div class="row">
+				<label class="form-label g-2 col-md-1 p-1" for="tracking-number"
+					th:text="#{shipment.tracking.num}">Tracking #</label>
+					<div class="g-2 col-md-2">
+						<input type="number" id="extension" th:field="*{trackingNumber}"
+						class="form-control" th:errorclass="'is-invalid'"
+						th:placeholder="#{shipment.tacking.num.placeholder}"
+						style="text-align: right" placeholder="0000000000000">
+					</div>
+				<label class="form-label g-2 col-md-1 p-1" for="receptionist"
+					th:text="#{shipment.receptionist}">Receptionist</label>
+					<div class="g-2 col-md-2">
+						<input id="receptionist" class="form-control" th:field="*{receptionist}"
+						readonly="readonly" value="Carlos Ruiz Laguna"/>
+				   </div>
+		</div>
 
-		TODO - Shipment form
-	</section>
-
+		<div class="row">
+						<label class="form-label g-2 col-md-1 p-1" for="priority">Priority</label>
+						<div class="g-2 col-md-1">
+							<input type="number" id="priority" class="form-control" min="${T(cat.institutmarianao.shipments.model.Assignment).MIN_PRIORITAT}" 
+							max="${T(cat.institutmarianao.shipments.model.Assignment).MAX_PRIORITAT}" 
+							style="text-align: right" placeholder="1" name="priority" value="">
+						</div>
+						<label class="form-label g-2 col-md-1 offset-1 p-1" for="category">Category</label>
+				<div class="g-2 col-md-2">
+					<select id="category" th:field="*{category}" class="form-select" th:errorclass="*is-invalid">
+					    <option th:each="category : ${T(cat.institutmarianao.shipments.model.Shipment.Category).values()}"
+					            th:value="${category}"
+					            th:text="${category}">
+					    </option>
+					</select>
+				</div>
+			</div>
+			
+			<div class="row"
+				th:replace="~{fragments/forms :: address('sender')}">Sender
+				form</div>
+			<div class="row"
+				th:replace="~{fragments/forms :: address('recipient')}">Recipient
+				form</div>
+			<div class="row">
+				<h5 class="form-label g-2 col-md-12 p-1 bg-light">&nbsp;</h5>
+			</div>
+			
+			<div class="row">
+				<label class="form-label g-2 col-md-1 p-1" th:for="weight"
+					th:text="#{shipment.weight}">Weight</label>
+				<div class="g-2 col-md-1">
+					<input th:id="weight" type="number" min="0" th:field="*{weight}"
+					class="form-control" th:errorclass="'is-valid'"
+					th:placeholder="#{shipment.weight}" placeholder="Weight">
+				</div>
+				
+				<label class="form-label g-2 col-md-1 p-1" th:for="height"
+					th:text="#{shipment.height}">Height</label>
+				<div class="g-2 col-md-1">
+					<input th:id="height" type="number" min="0" th:field="*{height}"
+					class="form-control" th:errorclass="'is-valid'"
+					th:placeholder="#{shipment.height}" placeholder="height">
+				</div>
+				
+				<label class="form-label g-2 col-md-1 p-1" th:for="width"
+					th:text="#{shipment.width}">Width</label>
+				<div class="g-2 col-md-1">
+					<input th:id="width" type="number" min="0" th:field="*{width}"
+					class="form-control" th:errorclass="'is-valid'"
+					th:placeholder="#{shipment.width}" placeholder="width">
+				</div>
+				
+				<label class="form-label g-2 col-md-1 p-1" th:for="length"
+					th:text="#{shipment.length}">Length</label>
+				<div class="g-2 col-md-1">
+					<input th:id="length" type="number" min="0" th:field="*{length}"
+					class="form-control" th:errorclass="'is-valid'"
+					th:placeholder="#{shipment.length}" placeholder="length">
+				</div>
+				
+				<div class="form-check g-2 col-md-1 offset-1">
+					<input id="express" class="form-check-input my-2" type="checkbox" name="express" value="true">
+					<input type="hidden" name="_express" value="on">
+					<label for="express" class="form-check-label g-2 p-1">Express</label>
+				</div>
+				
+				<div class="form-check g-2 col-md-1 offset-1">
+					<input id="fragile" class="form-check-input my-2" type="checkbox" name="fragile" value="true">
+					<input type="hidden" name="_fragile" value="on">
+					<label for="express" class="form-check-label g-2 p-1">Fragile</label>
+				</div>
+			</div>
+			
+			<div class="row">
+				<label class="form-label g-2 col-md-1 p-1" th:for="note">Note</label>
+				<div class="g-2 col-md-10">
+					<textarea th:id="note" th:field="*{note}" class="form-control" name="note"></textarea>
+				</div>
+			</div>
+			
+			<div class="row">
+						<div class="g-2 col-md-1">
+							<input class="btn btn-success" type="submit" value="Add new shipment">
+						</div>
+					</div>
+			<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+			</div>
+		</form>
+		</section>
 </body>
 </html>
