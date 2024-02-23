@@ -30,6 +30,28 @@
 			th:replace="~{fragments/template :: heading}">Heading</section>
 			
 	<form action="#" th:action="@{#ctx.springRequestContext.requestUri}" method="post" th:object="${shipment}" class="form-horizontal"> 
+	<div class="container px-4">
+
+				<div class="row">
+					<div class="g-2 col-md-8">
+						<div th:if="${#fields.hasAnyErrors()}"
+							class="row alert alert-danger alert-dismissible  p-1"
+							role="alert">
+
+							<ul>
+								<li th:each="err : ${#fields.detailedErrors()}"
+									th:class="${err.global} ? fst-italic">
+									<span
+										th:text="${err.global}? '*' : #{'shipment.'+${err.fieldName}}">
+										Username </span>: <span th:utext="${err.message}">el tamaño debe
+										estar entre 2 y 25</span>
+								</li>
+							</ul>
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					</div>
+				</div>
+		
 		<div class="container px-4">
 			<div class="row">
 				<label class="form-label g-2 col-md-1 p-1" for="tracking-number"
@@ -59,8 +81,8 @@
 				<div class="g-2 col-md-2">
 					<select id="category" th:field="*{category}" class="form-select" th:errorclass="*is-invalid">
 					    <option th:each="category : ${T(cat.institutmarianao.shipments.model.Shipment.Category).values()}"
-					            th:value="${category}"
-					            th:text="${category}">
+					            th:value="${#strings.toString(category)}"
+					            th:text="${#strings.substring(category, 0, 1).toUpperCase() + #strings.substring(category, 1).toLowerCase()}">
 					    </option>
 					</select>
 				</div>
@@ -81,7 +103,7 @@
 					th:text="#{shipment.weight}">Weight</label>
 				<div class="g-2 col-md-1">
 					<input th:id="weight" type="number" min="0" th:field="*{weight}"
-					class="form-control" th:errorclass="'is-valid'"
+					class="form-control" th:errorclass="'is-invalid'"
 					th:placeholder="#{shipment.weight}" placeholder="Weight">
 				</div>
 				
@@ -89,7 +111,7 @@
 					th:text="#{shipment.height}">Height</label>
 				<div class="g-2 col-md-1">
 					<input th:id="height" type="number" min="0" th:field="*{height}"
-					class="form-control" th:errorclass="'is-valid'"
+					class="form-control" th:errorclass="'is-invalid'"
 					th:placeholder="#{shipment.height}" placeholder="height">
 				</div>
 				
@@ -97,7 +119,7 @@
 					th:text="#{shipment.width}">Width</label>
 				<div class="g-2 col-md-1">
 					<input th:id="width" type="number" min="0" th:field="*{width}"
-					class="form-control" th:errorclass="'is-valid'"
+					class="form-control" th:errorclass="'is-invalid'"
 					th:placeholder="#{shipment.width}" placeholder="width">
 				</div>
 				
@@ -105,7 +127,7 @@
 					th:text="#{shipment.length}">Length</label>
 				<div class="g-2 col-md-1">
 					<input th:id="length" type="number" min="0" th:field="*{length}"
-					class="form-control" th:errorclass="'is-valid'"
+					class="form-control" th:errorclass="'is-invalid'"
 					th:placeholder="#{shipment.length}" placeholder="length">
 				</div>
 				
@@ -125,7 +147,8 @@
 			<div class="row">
 				<label class="form-label g-2 col-md-1 p-1" th:for="note">Note</label>
 				<div class="g-2 col-md-10">
-					<textarea th:id="note" th:field="*{note}" class="form-control" name="note"></textarea>
+					<textarea th:id="note" th:field="*{note}" class="form-control" name="note"
+					></textarea>
 				</div>
 			</div>
 			

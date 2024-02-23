@@ -56,38 +56,65 @@ public class ShipmentController {
 
 	@PostMapping("/new")
 	public String submitNewShipment(@Validated Shipment shipment, BindingResult result) {
+		if (result.hasErrors()) {
+			return "shipment";
+		}
+
 		shipmentService.add(shipment);
 		return "redirect:/shipments/list/PENDING";
 	}
 
 	@GetMapping("/list/{shipment-status}")
-	public ModelAndView allShipmentsList(@PathVariable("shipment-status") Status shipmentStatus) {
-		ModelAndView shipmentsView = new ModelAndView("shipments");
+	public ModelAndView allShipmentsList(@ModelAttribute("user") User user,
+			@PathVariable("shipment-status") Status shipmentStatus) {
 
+		ModelAndView shipmentsView = new ModelAndView("shipments");
+		Delivery delivery = new Delivery();
+		delivery.setPerformer(user.getUsername());
+		Assignment assignment = new Assignment();
+		assignment.setPerformer(user.getUsername());
+		assignment.setPriority(2);
 		ShipmentsFilter shipmentFilter = new ShipmentsFilter();
 		shipmentFilter.setStatus(shipmentStatus);
+		shipmentsView.getModelMap().addAttribute("userRole", user.getRole());
 		shipmentsView.getModelMap().addAttribute("shipmentStatus", shipmentStatus);
-		shipmentsView.getModelMap().addAttribute("shipments", shipmentService.filterShipments(shipmentFilter));
-		shipmentsView.getModelMap().addAttribute("assignment", new Assignment());
-		shipmentsView.getModelMap().addAttribute("delivery", new Delivery());
-		shipmentsView.getModelMap().addAttribute("couriers", userService.getAllCourier());
+
+		switch (user.getRole()) {
+		case COURIER:
+			shipmentFilter.setCourierAssigned(user.getUsername());
+			shipmentsView.getModelMap().addAttribute("shipments", shipmentService.filterShipments(shipmentFilter));
+			shipmentsView.getModelMap().addAttribute("assignment", assignment);
+			shipmentsView.getModelMap().addAttribute("delivery", delivery);
+			break;
+		case RECEPTIONIST:
+			shipmentFilter.setReceptionist(user.getUsername());
+			shipmentsView.getModelMap().addAttribute("shipments", shipmentService.filterShipments(shipmentFilter));
+			shipmentsView.getModelMap().addAttribute("assignment", assignment);
+			shipmentsView.getModelMap().addAttribute("delivery", delivery);
+			shipmentsView.getModelMap().addAttribute("couriers", userService.getAllCourier());
+			break;
+		case LOGISTICS_MANAGER:
+			shipmentsView.getModelMap().addAttribute("shipments", shipmentService.filterShipments(shipmentFilter));
+			shipmentsView.getModelMap().addAttribute("assignment", assignment);
+			shipmentsView.getModelMap().addAttribute("delivery", delivery);
+			shipmentsView.getModelMap().addAttribute("couriers", userService.getAllCourier());
+			break;
+		}
 
 		return shipmentsView;
-
 	}
 
 	@PostMapping("/assign")
 	public String assignShipment(@Validated Assignment assignment, BindingResult result) {
 		assignment.setDate(new Date());
 		shipmentService.tracking(assignment);
-		return "redirect:/shipments/list/IN_PROCESS";
-
+		return "redirect:/shipments/list/PENDING";
 	}
 
 	@PostMapping("/deliver")
 	public String deliverShipment(@Validated Delivery delivery, BindingResult result) {
 		delivery.setDate(new Date());
 		shipmentService.tracking(delivery);
-		return "redirect:/shipments/list";
+		return "redirect:/shipments/list/IN_PROCESS";
 	}
 }

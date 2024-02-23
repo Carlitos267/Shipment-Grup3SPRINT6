@@ -2,6 +2,7 @@ package cat.institutmarianao.shipments.services.impl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import cat.institutmarianao.shipments.model.Action;
 import cat.institutmarianao.shipments.model.Shipment;
+import cat.institutmarianao.shipments.model.Shipment.Status;
 import cat.institutmarianao.shipments.model.forms.ShipmentsFilter;
 import cat.institutmarianao.shipments.services.ShipmentService;
 
@@ -40,10 +42,26 @@ public class ShipmentServiceImpl implements ShipmentService {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUri)
 				.queryParam("status", filter.getStatus()).queryParam("category", filter.getCategory());
 
+		if (filter.getCourierAssigned() != null) {
+			builder.queryParam("courierAssigned", filter.getCourierAssigned());
+		}
+
+		if (filter.getReceptionist() != null) {
+			builder.queryParam("receptionist", filter.getReceptionist());
+		}
+
 		ResponseEntity<Shipment[]> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null,
 				Shipment[].class);
 
 		Shipment[] shipmentsArray = response.getBody();
+
+		if (filter.getReceptionist() != null
+				&& (filter.getStatus().equals(Status.IN_PROCESS) || filter.getStatus().equals(Status.PENDING))) {
+			List<Shipment> filteredShipments = Arrays.stream(shipmentsArray)
+					.filter(shipment -> shipment.getReceptionist().equals(filter.getReceptionist()))
+					.collect(Collectors.toList());
+			return filteredShipments;
+		}
 
 		return Arrays.asList(shipmentsArray);
 	}
@@ -62,8 +80,13 @@ public class ShipmentServiceImpl implements ShipmentService {
 
 	@Override
 	public Action tracking(Action action) {
-		final String uri = webServiceHost + ":" + webServicePort + "shipments/find/tracking/by/id"
-				+ action.getShipmentId();
-		return restTemplate.getForObject(uri, Action.class);
+		final String uri = webServiceHost + ":" + webServicePort + "/shipments/save/action";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		HttpEntity<Action> request = new HttpEntity<>(action, headers);
+
+		return restTemplate.postForObject(uri, request, Action.class);
 	}
 }

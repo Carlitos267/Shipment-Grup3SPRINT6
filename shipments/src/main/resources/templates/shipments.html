@@ -47,33 +47,33 @@
 					<th th:text="#{shipments.table.head.category}">Category</th>
 					<th th:text="#{shipments.table.head.note}">Note</th>
 					<th th:text="#{shipments.table.head.deliver}"
-						th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS')}" class="text-center">Deliver</th>
+						th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS') and #strings.equals(userRole, 'COURIER')}" class="text-center">Deliver</th>
 					<th th:text="#{shipments.table.head.assign}"
-						th:if="${#strings.equals(shipmentStatus, 'PENDING')}" class="text-center">Assign</th>
+						th:if="${#strings.equals(shipmentStatus, 'PENDING') and #strings.equals(userRole, 'LOGISTICS_MANAGER') or #strings.equals(userRole, 'RECEPTIONIST')}" class="text-center">Assign</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="shipment, iStat  : ${shipments}">
 					<td th:text="${iStat.count}">1</td>
 					<td th:text="${shipment.trackingNumber}">101</td>
-					<td th:text="${shipment.receptionDate}">24/09/2023 07:54:13</td>
+					<td th:text="${#dates.format(shipment.receptionDate, 'dd/MM/yyyy HH:mm:ss')}">24/09/2023 07:54:13</td>
 					<td th:text="${shipment.receptionist}">maria</td>
 					<td th:text="${shipment.priority}"
 					th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS')}" class="text-center">9</td>
 					<td th:text="${shipment.courier}"
 					th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS')}" class="text-center">>genis</td>
-					<td th:text="${shipment.category}">9</td>
+					<td th:text="${#strings.substring(shipment.category, 0, 1).toUpperCase() + #strings.substring(shipment.category, 1).toLowerCase()}"></td>
 					<td th:text="${shipment.note}"> Chinese Vase </td>
-					<td th:if="${#strings.equals(shipmentStatus, 'PENDING')}" class="text-center">
+					<td th:if="${#strings.equals(shipmentStatus, 'PENDING') and #strings.equals(userRole, 'LOGISTICS_MANAGER') or #strings.equals(userRole, 'RECEPTIONIST')}" class="text-center">
 						<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#assignShipmentDialog" 
 						th:data-bs-shipmentId="${shipment.id}">
 						<i class="bi bi-person-bounding-box"></i>
 						</button>
 					</td>	
 					
-					<td th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS')}" class="text-center">
+					<td th:if="${#strings.equals(shipmentStatus, 'IN_PROCESS') and #strings.equals(userRole, 'COURIER')}" class="text-center">
 						<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#deliverShipmentDialog" 
-						th:data-bs-shipmentId="${shipment.id-1}" th:data-bs-trackingId="${shipment.trackingNumber}">
+						th:data-bs-shipmentId="${shipment.id}" th:data-bs-trackingId="${shipment.trackingNumber}">
 						<i class="bi bi-truck-front-fill"></i>
 						</button>
 					</td>
